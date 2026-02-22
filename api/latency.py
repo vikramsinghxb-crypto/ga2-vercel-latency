@@ -1,25 +1,20 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-import numpy as np
 import json
+import numpy as np
 import os
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["POST"],
-    allow_headers=["*"],
-)
 
 DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "telemetry.json")
 
 with open(DATA_FILE) as f:
     telemetry = json.load(f)
 
-@app.post("/api/latency")
-async def analyze(body: dict):
+def handler(request):
+    if request.method != "POST":
+        return {
+            "statusCode": 405,
+            "body": json.dumps({"error": "Method Not Allowed"})
+        }
+
+    body = request.get_json()
     regions = body.get("regions", [])
     threshold = body.get("threshold_ms", 180)
 
@@ -41,6 +36,11 @@ async def analyze(body: dict):
             "breaches": sum(1 for l in latencies if l > threshold)
         }
 
-    return result
-
-handler = app
+    return {
+        "statusCode": 200,
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+        },
+        "body": json.dumps(result)
+    }
