@@ -21,7 +21,7 @@ with open(DATA_FILE) as f:
     telemetry = json.load(f)
 
 
-@app.post("/api/latency")
+@app.post("/")
 async def analyze(request: Request):
     body = await request.json()
     regions = body.get("regions", [])
