@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 import json
@@ -6,7 +6,6 @@ import os
 
 app = FastAPI()
 
-# Enable CORS for POST from any origin
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,16 +13,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load telemetry file
 DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "telemetry.json")
 
 with open(DATA_FILE) as f:
     telemetry = json.load(f)
 
-
-@app.post("/")
-async def analyze(request: Request):
-    body = await request.json()
+@app.post("/api/latency")
+async def analyze(body: dict):
     regions = body.get("regions", [])
     threshold = body.get("threshold_ms", 180)
 
@@ -46,3 +42,5 @@ async def analyze(request: Request):
         }
 
     return result
+
+handler = app
